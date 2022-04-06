@@ -1,67 +1,62 @@
 package com.velvet.data.repo
 
+import com.velvet.data.Settings.API_KEY
+import com.velvet.data.Settings.EXCLUDED
+import com.velvet.data.Settings.UNITS
+import com.velvet.data.entity.City
 import com.velvet.data.network.Network
-import com.velvet.data.local.arts.CardArtStore
-import com.velvet.data.local.CardDao
+import com.velvet.data.local.CityDao
+import com.velvet.data.utils.addForecast
 
 class RepositoryImpl(
     private val network: Network,
-    private val dao: CardDao,
-    private val arts: CardArtStore) : Repository {
+    private val dao: CityDao
+    ) : Repository, SafeApiCall {
 
-    override suspend fun fetch() {
-        val cardsResult = network.getCards()
-        val cards = cardsResult.getOrNull()
-        if (cards != null) {
-            dao.deleteAll(cards = cards.toCardList())
-            dao.insertAll(cards = cards.toCardList())
-        }
+    companion object {
+
     }
 
-    override suspend fun getCards() : List<Card> {
+    suspend fun updateWeather() : Result<Unit> {
+        val cities = dao.getAll()
+        val updatedCities = ArrayList<City>()
+        for (city in cities) {
+            val forecastResult = downloadCityWeather(city)
+            if (forecastResult.isSuccess) {
+                val forecast = forecastResult.getOrNull()
+                if (forecast != null) {
+                    updatedCities.add(city.addForecast(forecast))
+                }
+            }
+            else {
+                return Result.failure(Exception("Cannot download data from remote source!"))
+            }
+        }
+        dao.insertAll(updatedCities)
+        return Result.success(Unit)
+    }
+
+    suspend fun getWeather() : List<City> {
+        val cities = dao.getAll()
+        val updatedCities = ArrayList<City>()
+        for (city in cities) {
+            val forecastResult = downloadCityWeather(city)
+            if (forecastResult.isSuccess) {
+                val forecast = forecastResult.getOrNull()
+                if (forecast != null) {
+                    updatedCities.add(city.addForecast(forecast))
+                }
+            }
+            else {
+                return cities
+            }
+        }
+        dao.insertAll(updatedCities)
         return dao.getAll()
     }
 
-    override suspend fun getCard(cardName: String) : Card {
-        return dao.findByName(cardName)
-    }
-
-    private fun CardScheme.toCard() : Card {
-        return Card(
-            type = if (this.type == "major") CardTypes.MAJOR else if (this.type == "minor") CardTypes.MINOR else CardTypes.NONE,
-            name = this.name ?: "",
-            meaningUp =  this.meaningUp ?: "",
-            meaningRev =  this.meaningRev ?: "",
-            description = this.description ?: "",
-            art =  arts.getArt(this.name) ?: "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n" +
-            "XXXXXXXXXXXXXXXXXXXXX\n"
-        )
-    }
-
-    private fun List<CardScheme>.toCardList() : List<Card> {
-        val output: ArrayList<Card> = ArrayList()
-        for (cardScheme in this) {
-            output.add(cardScheme.toCard())
-        }
-        return output
+    private suspend fun downloadCityWeather(city: City) = safeApiCall {
+        network.getWeatherForecast(appId = API_KEY, latitude = city.latitude.toString(), longitude = city.longitude.toString(), exclude = EXCLUDED, units = UNITS)
     }
 
 

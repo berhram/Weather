@@ -4,11 +4,10 @@ import com.velvet.data.schemas.geo.CitySchema
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface GeoApi : Api {
+interface GeoApi {
     @GET
     suspend fun findCities(
         @Query("appid") appId: String,
-        @Query("q") keyword: String,
-        @Query("limit") limit: String
+        @Query("q") keyword: String
     ) : List<CitySchema>
 }

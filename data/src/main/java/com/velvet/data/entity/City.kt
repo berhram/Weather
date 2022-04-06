@@ -1,10 +1,16 @@
 package com.velvet.data.entity
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity
 data class City(
+    @PrimaryKey val id: Long,
     val name: String,
-    val latitude: String,
-    val longitude: String,
-    val time: String,
+    val latitude: Double,
+    val longitude: Double,
+    val time: Long,
+    val humanTime: String,
     val temp: String,
     val feelsLike: String,
     val pressure: String,
