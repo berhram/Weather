@@ -18,45 +18,28 @@ import org.orbitmvi.orbit.syntax.simple.reduce
 import org.orbitmvi.orbit.viewmodel.container
 
 class FeedViewModel(
-    private val fetchCardsUseCase: FetchCardsUseCase,
-    private val getAllCardsUseCase: GetAllCardsUseCase,
-    private val searchCardsUseCase: SearchCardsUseCase,
-    private val filterCardsUseCase: FilterCardsUseCase) : ContainerHost<FeedState, FeedEffect>,
+    private val fetchWeatherUseCase: FetchCardsUseCase,
+    private val searchCitiesUseCase: SearchCardsUseCase,
+    private val deleteCityUseCase: GetAllCardsUseCase
+    ) : ContainerHost<FeedState, FeedEffect>,
     ViewModel() {
-    override val container: Container<FeedState, FeedEffect> = container(FeedState())
+    override val container: Container<FeedState, FeedEffect>
     private var searchJob: Job? = null
 
-    init { refresh() }
+    init {
+        container = fetchWeatherUseCase.invoke()
+    }
 
     fun refresh() = intent {
-        reduce { state.copy(isLoading = true) }
-        fetchCardsUseCase.invoke()
-        val cards = getAllCardsUseCase.invoke()
+
+    }
+
+    fun onCityClick(city: CityCard) = intent {
         reduce {
-            state.copy(isLoading = false,
-                cards = cards,
-                searchText = "",
-                filter = CardFilter(isMinorEnabled = true, isMajorEnabled = true),
-                isExpanded = false)
+            val cityCards = state.cityCards.toMutableList()
+            cityCards[cityCards.indexOf(city)] = city.copy(isExpanded = !city.isExpanded)
+            state.copy(cityCards = cityCards)
         }
-    }
-
-    fun showCard(cardName: String) = intent {
-        postSideEffect(FeedEffect.ShowCard(cardName = cardName))
-    }
-
-    fun filterClick() = intent {
-        reduce { state.copy(isExpanded = !state.isExpanded) }
-    }
-
-    fun setFilter(filterKey: CardTypes) = intent {
-        if (filterKey == CardTypes.MAJOR) {
-            reduce { state.copy(filter = CardFilter(isMinorEnabled = state.filter.isMinorEnabled, isMajorEnabled = !state.filter.isMajorEnabled)) }
-        } else if (filterKey == CardTypes.MINOR) {
-            reduce { state.copy(filter = CardFilter(isMinorEnabled = !state.filter.isMinorEnabled, isMajorEnabled = state.filter.isMajorEnabled)) }
-        }
-        val cards = filterCardsUseCase(isMajorEnabled = state.filter.isMajorEnabled, isMinorEnabled = state.filter.isMinorEnabled)
-        reduce { state.copy(cards = cards) }
     }
 
     fun searchCard(searchWord: String) = intent {

@@ -1,6 +1,5 @@
 package com.velvet.data.network
 
-import com.velvet.data.schemas.weather.WeatherSchema
 import retrofit2.http.GET
 import retrofit2.http.Query
 

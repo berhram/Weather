@@ -12,5 +12,4 @@ data class CurrentSchema(
     @SerializedName("visibility") val visibility: Double?,
     @SerializedName("wind_speed") val windSpeed: Double?,
     @SerializedName("wind_deg") val windDeg: Double?,
-    @SerializedName("weather") val weather: List<WeatherSchema>?,
 )

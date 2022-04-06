@@ -4,21 +4,21 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import com.velvet.data.CityCard
+import com.velvet.data.entity.City
 import com.velvet.weather.R
 import kotlinx.coroutines.flow.collectLatest
 
@@ -28,50 +28,30 @@ fun FeedScreen(viewModel: FeedViewModel, onShowCard: (cardName: String) -> Unit)
     LaunchedEffect(viewModel) {
         viewModel.container.sideEffectFlow.collectLatest {
             when (it) {
-                is FeedEffect.ShowCard -> onShowCard(it.cardName)
+                //TODO
             }
         }
     }
     Scaffold(topBar = {
-        TopAppBar(elevation = 0.dp, modifier = Modifier.fillMaxWidth()) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(text = stringResource(id = R.string.tarot_dir),
-                    textAlign = TextAlign.Start)
-                IconButton(onClick = { viewModel.filterClick() }) {
-
+        TopAppBar {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
+                IconButton(onClick = { viewModel.searchClick() }) {
+                    Icon(imageVector = if (state.value.isSearchExpanded) Icons.Filled.Search else Icons.Outlined.Search, contentDescription = "Search button")
                 }
             }
         }
     }) {
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-            SearchBar(searchText = state.value.searchText, onChangedSearchText = { viewModel.searchCard(it) })
+            if (state.value.isSearchExpanded) {
+                SearchBar(searchText = state.value.searchText, onChangedSearchText = { viewModel.searchCard(it) })
+            }
             SwipeRefresh(
                 state = rememberSwipeRefreshState(isRefreshing = state.value.isLoading),
                 onRefresh = { viewModel.refresh() },
                 modifier = Modifier.fillMaxSize()
             ) {
                 LazyColumn {
-                    if (state.value.cards.isNullOrEmpty()) {
-                        items(items = listOf(System.currentTimeMillis()), key = { it }) {
-                            Column(
-                                modifier = Modifier
-                                    .fillParentMaxHeight()
-                                    .fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                            ) {
-                                Text(
-                                    textAlign = TextAlign.Center,
-                                    text = stringResource(id = R.string.no_cards),
-                                )
-                            }
-                        }
-                    } else {
-                        items(
-                            items = state.value.cards,
-                            key = { it.name }
-                        ) { CardItem(it, viewModel = viewModel) }
-                    }
+                    itemsIndexed(state.value.cities) { index: Int, item: City ->  ExpandableCard(item, viewModel = viewModel, expanded = state.value.expanded[index]) }
                 }
             }
         }
@@ -80,38 +60,25 @@ fun FeedScreen(viewModel: FeedViewModel, onShowCard: (cardName: String) -> Unit)
 
 @Composable
 fun ExpandableCard(
-    data: CityCard,
-    onCardArrowClick: () -> Unit,
-    expanded: Boolean,
+    state: CityCard,
+    viewModel: FeedViewModel
 ) {
-    val transitionState = remember {
-        MutableTransitionState(expanded).apply {
-            targetState = !expanded
-        }
-    }
-    val transition = updateTransition(transitionState)
-
-    val arrowRotationDegree by transition.animateFloat({
-        tween(durationMillis = 2000)
-    }) {
-        if (expanded) 0f else 180f
-    }
-
     Column {
-        Row {
-            Text(text = )
+        Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(text = state.city.name)
+            Text(text = state.city.temp)
             IconButton(
-                onClick = onClick,
+                onClick = { viewModel.onCityClick(state) },
                 content = {
                     Icon(
                         Icons.Filled.ArrowDropDown,
                         contentDescription = "Expandable Arrow",
-                        modifier = Modifier.rotate(arrowRotationDegree),
+                        modifier = if (state.isExpanded) Modifier.rotate(90f) else Modifier.rotate(0f)
                     )
                 }
             )
         }
-        ExpandableContent(visible = expanded, initialVisibility = expanded)
+        ExpandableContent(visible = state.isExpanded, initialVisibility = state.isExpanded)
     }
 }
 
@@ -150,8 +117,7 @@ fun ExpandableContent(
         enter = enterExpand + enterFadeIn,
         exit = exitCollapse + exitFadeOut
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
-            Spacer(modifier = Modifier.heightIn(100.dp))
+        Column() {
             Text(
                 text = "Expandable content here",
                 textAlign = TextAlign.Center
