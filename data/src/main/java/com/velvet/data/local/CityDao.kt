@@ -9,8 +9,11 @@ interface CityDao {
     fun getAll(): List<City>
 
     @Insert
-    fun insertAll(cards: List<City>)
+    fun insertAll(cities: List<City>)
+
+    @Insert
+    fun insert(cities: City)
 
     @Delete
-    fun deleteAll(cards: List<City>)
+    fun deleteAll(cities: List<City>)
 }

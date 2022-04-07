@@ -5,7 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface GeoApi {
-    @GET
+    @GET("direct?")
     suspend fun findCities(
         @Query("appid") appId: String,
         @Query("q") keyword: String

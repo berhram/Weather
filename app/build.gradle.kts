@@ -48,11 +48,8 @@ android {
 }
 
 dependencies {
-
-    implementation(project(":domain"))
     implementation(project(":data"))
     kapt(Dependencies.Room.roomKapt)
-    implementation(Dependencies.Compose.systemUiController)
     implementation(Dependencies.Room.room)
     implementation(Dependencies.Orbit.orbit)
     implementation(Dependencies.Orbit.orbitCore)
@@ -64,7 +61,6 @@ dependencies {
     implementation(Dependencies.Compose.charts)
     implementation(Dependencies.Compose.foundation_layout)
     implementation(Dependencies.Compose.material)
-    implementation(Dependencies.Compose.runtimeLivedata)
     implementation(Dependencies.Compose.uiTooling)
     implementation(Dependencies.Compose.accompanist)
     implementation(Dependencies.Core.appCompat)

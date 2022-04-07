@@ -18,7 +18,6 @@ pluginManagement {
         }
     }
 }
-rootProject.name = "Tarot"
+rootProject.name = "Weather"
 include(":app")
 include(":data")
-include(":domain")

@@ -1,5 +1,3 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
-
 plugins {
     id(Dependencies.Plugins.library)
     id(Dependencies.Plugins.kotlinAndroid)

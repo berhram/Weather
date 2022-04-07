@@ -2,10 +2,10 @@ package com.velvet.weather.feed
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.velvet.domain.usecase.FetchCardsUseCase
-import com.velvet.domain.usecase.FilterCardsUseCase
-import com.velvet.domain.usecase.GetAllCardsUseCase
-import com.velvet.domain.usecase.SearchCardsUseCase
+import com.velvet.data.repo.Repository
+import com.velvet.data.repo.RepositoryResponse
+import com.velvet.weather.R
+import com.velvet.weather.ToastMaker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -18,37 +18,65 @@ import org.orbitmvi.orbit.syntax.simple.reduce
 import org.orbitmvi.orbit.viewmodel.container
 
 class FeedViewModel(
-    private val fetchWeatherUseCase: FetchCardsUseCase,
-    private val searchCitiesUseCase: SearchCardsUseCase,
-    private val deleteCityUseCase: GetAllCardsUseCase
+    private val repository: Repository,
+    private val toastMaker: ToastMaker
     ) : ContainerHost<FeedState, FeedEffect>,
     ViewModel() {
-    override val container: Container<FeedState, FeedEffect>
+    override val container: Container<FeedState, FeedEffect> = container(FeedState())
     private var searchJob: Job? = null
 
     init {
-        container = fetchWeatherUseCase.invoke()
+        refresh()
+        checkOutdated()
+    }
+
+    fun checkOutdated() {
+
+    }
+
+    fun searchClick() = intent {
+        reduce { state.copy(isSearchExpanded = !state.isSearchExpanded) }
     }
 
     fun refresh() = intent {
-
-    }
-
-    fun onCityClick(city: CityCard) = intent {
-        reduce {
-            val cityCards = state.cityCards.toMutableList()
-            cityCards[cityCards.indexOf(city)] = city.copy(isExpanded = !city.isExpanded)
-            state.copy(cityCards = cityCards)
+        when (val response = repository.getWeather()) {
+            is RepositoryResponse.Success -> {
+                reduce {
+                    state.copy(
+                        searchText = "",
+                        isSearchExpanded = false,
+                        cityCards = response.value.toCityCards()
+                    )
+                }
+            } is RepositoryResponse.ErrorRecently -> {
+                viewModelScope.launch(Dispatchers.Main) { toastMaker.makeToast(R.string.already) }
+            } is RepositoryResponse.ErrorFailure -> {
+                viewModelScope.launch(Dispatchers.Main) { toastMaker.makeToast(R.string.error_update) }
+            }
         }
     }
 
-    fun searchCard(searchWord: String) = intent {
+    fun onCityClick(id: Long) = intent {
+        val cityCards = state.cityCards.toMutableList()
+        for (card in cityCards) {
+            if (card.city.id == id) {
+                cityCards[cityCards.indexOf(card)] = card.copy(isExpanded = !card.isExpanded)
+                reduce { state.copy(cityCards = cityCards) }
+            }
+        }
+    }
+
+    fun searchCity(searchWord: String) = intent {
         searchJob?.cancel()
         searchJob = viewModelScope.launch(Dispatchers.IO) {
             reduce { state.copy(searchText = searchWord) }
-            val cards = searchCardsUseCase(state.searchText)
+            val cities = repository.getFilteredWeather(state.searchText)
             delay(1000)
-            reduce { state.copy(cards = cards) }
+            reduce { state.copy(cityCards = cities.toCityCards()) }
         }
+    }
+
+    private fun addDefaultCities() = {
+
     }
 }

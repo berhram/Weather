@@ -1,6 +1,8 @@
 package com.velvet.data.network
 
 import com.velvet.data.BuildConfig
+import com.velvet.data.Settings.GEO_BASE_URL
+import com.velvet.data.Settings.WEATHER_BASE_URL
 import com.velvet.data.schemas.geo.CitySchema
 import com.velvet.data.schemas.weather.ForecastSchema
 import okhttp3.OkHttpClient
@@ -11,11 +13,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 class NetworkImpl : Network {
     private var geoService: GeoApi
     private var weatherService: WeatherApi
-
-    companion object {
-        const val WEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"
-        const val GEO_BASE_URL = "http://api.openweathermap.org/geo/1.0/direct?"
-    }
 
     init {
         val logging = HttpLoggingInterceptor()

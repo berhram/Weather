@@ -3,6 +3,7 @@ package com.velvet.data.utils
 import com.velvet.data.Settings.DATE_FORMAT_LONG
 import com.velvet.data.Settings.DATE_FORMAT_SHORT
 import com.velvet.data.Settings.NO_NEW_CALL_TIME_MILLIS
+import com.velvet.data.Settings.OUTDATED_TIME_MILLIS
 import com.velvet.data.entity.City
 import com.velvet.data.entity.DailyWeather
 import com.velvet.data.schemas.geo.CitySchema
@@ -14,6 +15,10 @@ import kotlin.collections.ArrayList
 
 fun Long.isRecently() : Boolean {
     return System.currentTimeMillis() - this <= NO_NEW_CALL_TIME_MILLIS
+}
+
+fun Long.isOutdated() : Boolean {
+    return System.currentTimeMillis() - this <= OUTDATED_TIME_MILLIS
 }
 
 fun City.addForecast(forecast: ForecastSchema) : City {
@@ -51,6 +56,14 @@ fun Long.toShortHumanDate() : String {
 
 fun Long.toLongHumanDate() : String {
     return SimpleDateFormat(DATE_FORMAT_LONG).format(Date(this))
+}
+
+fun List<DailySchema>.toDailyWeather() : List<DailyWeather> {
+    val output = ArrayList<DailyWeather>()
+    for (schema in this) {
+        output.add(schema.toDailyWeather())
+    }
+    return output
 }
 
 fun DailySchema.toDailyWeather() : DailyWeather {
