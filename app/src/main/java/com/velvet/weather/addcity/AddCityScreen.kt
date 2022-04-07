@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,6 +15,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.velvet.data.schemas.geo.CitySchema
 import com.velvet.weather.R
 import com.velvet.weather.feed.SearchBar
@@ -30,12 +34,15 @@ fun AddCityScreen(viewModel: AddCityViewModel, goBack: () -> Unit) {
     Scaffold(topBar = {
         TopAppBar {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(text = stringResource(id = R.string.find_city))
+                IconButton(onClick = { goBack() }) {
+                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Search button")
+                }
+                Text(text = stringResource(id = R.string.find_city), style = MaterialTheme.typography.h5, color = MaterialTheme.colors.onPrimary)
             }
         }
     }) {
         Column(Modifier.fillMaxSize()) {
-            SearchBar(searchText = state.value.searchText, onChangedSearchText = { viewModel.findCities(it) })
+            SearchBar(searchText = state.value.searchText, onChangedSearchText = { viewModel.findCities(it) }, modifier = Modifier.padding(10.dp))
             LazyColumn() {
                 items(state.value.candidates) {
                     item ->  CandidateCard(viewModel = viewModel, candidate = item)
@@ -55,7 +62,7 @@ fun CandidateCard(viewModel: AddCityViewModel, candidate: CitySchema) {
                 latitude = candidate.latitude,
                 longitude = candidate.longitude
             )
-        }
+        }.padding(10.dp).fillMaxWidth()
     ) {
         Text(text = candidate.name + ", " + candidate.country)
     }

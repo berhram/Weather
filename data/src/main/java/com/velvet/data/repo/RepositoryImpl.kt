@@ -20,7 +20,7 @@ class RepositoryImpl(
 
     override suspend fun getWeather() : RepositoryResponse<List<City>> {
         if (timeStore.getTime().isRecently()) {
-            return RepositoryResponse.ErrorRecently
+            return RepositoryResponse.Recently(dao.getAll())
         }
         return if (updateWeather()) {
             RepositoryResponse.Success(dao.getAll())

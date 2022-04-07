@@ -25,8 +25,8 @@ class AddCityViewModel(private val repository: Repository, private val toastMake
         searchJob?.cancel()
         searchJob = viewModelScope.launch(Dispatchers.IO) {
             reduce { state.copy(searchText = keyword) }
+            delay(2000)
             val response = repository.findCandidates(state.searchText)
-            delay(3000)
             if (response.isSuccess) {
                 val candidates = response.getOrNull()
                 if (candidates != null) {

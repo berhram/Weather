@@ -7,4 +7,6 @@
     <string name="already">Data already up to date</string>
     <string name="error_update">Can\'t retreive data from Internet!</string>
     <string name="add_city">Add city</string>
+    <string name="moscow">Moscow</string>
+    <string name="spb">Saint-Petersburg</string>
 </resources>

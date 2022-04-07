@@ -6,18 +6,10 @@ data class FeedState(
     val isLoading: Boolean = false,
     val cityCards: List<CityCard> = emptyList(),
     val searchText: String = "",
-    val isSearchExpanded: Boolean = false
+    val isSearchExpanded: Boolean = false,
+    val isOutdated: Boolean = false,
 )
 
-fun FeedState.setCities(cities: List<City>) : FeedState {
-    val cards = ArrayList<CityCard>()
-    for (city in cities) {
-        cards.add(CityCard(city, false))
-    }
-    return this.copy(
-        cityCards = cards
-    )
-}
 
 fun List<City>.toCityCards() : List<CityCard> {
     val cards = ArrayList<CityCard>()

@@ -13,4 +13,11 @@ object Settings {
     const val DB_NAME = "weather-app-db"
     const val WEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/"
     const val GEO_BASE_URL = "https://api.openweathermap.org/geo/1.0/"
+    const val DEFAULT_CITY_1_NAME = "Moscow"
+    const val DEFAULT_CITY_2_NAME = "Saint Petersburg"
+    const val DEFAULT_CITY_1_LATITUDE = 55.7522
+    const val DEFAULT_CITY_2_LATITUDE = 59.8944
+    const val DEFAULT_CITY_1_LONGITUDE = 37.6156
+    const val DEFAULT_CITY_2_LONGITUDE = 30.2642
+    const val ANIMATION_DURATION = 500
 }
