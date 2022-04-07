@@ -1,6 +1,5 @@
 package com.velvet.data.repo
 
-import com.velvet.data.Settings
 import com.velvet.data.Settings.API_KEY
 import com.velvet.data.Settings.EXCLUDED
 import com.velvet.data.Settings.UNITS
@@ -11,7 +10,7 @@ import com.velvet.data.local.TimeStore
 import com.velvet.data.utils.addForecast
 import com.velvet.data.utils.isRecently
 import com.velvet.data.utils.toDailyWeather
-import com.velvet.data.utils.toLongHumanDate
+import com.velvet.data.utils.toHumanDate
 
 class RepositoryImpl(
     private val network: Network,
@@ -49,8 +48,8 @@ class RepositoryImpl(
                         name = name,
                         latitude = latitude,
                         longitude = longitude,
-                        time = System.currentTimeMillis(),
-                        humanTime = forecast.currentWeather.time.toLongHumanDate(),
+                        time = timeStore.getTime(),
+                        humanTime = forecast.currentWeather.time.toHumanDate(),
                         temp = forecast.currentWeather.temp.toString(),
                         feelsLike = forecast.currentWeather.feelsLike.toString(),
                         pressure = forecast.currentWeather.pressure.toString(),

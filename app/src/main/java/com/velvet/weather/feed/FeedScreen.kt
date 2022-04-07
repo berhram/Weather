@@ -6,6 +6,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -71,6 +72,14 @@ fun FeedScreen(viewModel: FeedViewModel, onAddCity: () -> Unit) {
 }
 
 @Composable
+fun ForeCastCell(date: String, min: String, max: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.padding(5.dp)) {
+        Text(text = date, color = MaterialTheme.colors.onPrimary)
+        Text(text = "$min°C~$max°C", color = MaterialTheme.colors.onPrimary)
+    }
+}
+
+@Composable
 fun ExpandableCard(
     localState: CityCard,
     viewModel: FeedViewModel
@@ -81,7 +90,7 @@ fun ExpandableCard(
             .fillMaxWidth()
             .background(MaterialTheme.colors.primary, shape = MaterialTheme.shapes.small)) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(text = localState.city.name + " " + localState.city.temp + " °C", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(start = 10.dp))
+            Text(text = "${localState.city.name} ${localState.city.temp} °C", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(start = 10.dp))
             IconButton(
                 onClick = { viewModel.onCityClick(localState.city.id) },
                 content = {
@@ -133,19 +142,26 @@ fun ExpandableContent(
         exit = exitCollapse + exitFadeOut
     ) {
         Column() {
-            Text(text = stringResource(R.string.update_time) + " " + localState.city.humanTime, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
-            Text(text = stringResource(R.string.feels_like) + " " + localState.city.feelsLike, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
-            Text(text = stringResource(R.string.humidity) + " " + localState.city.humidity, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
-            Text(text = stringResource(R.string.clouds) + " " + localState.city.clouds, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
-            Text(text = stringResource(R.string.visibility) + " " + localState.city.visibility, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
-            Text(text = stringResource(R.string.wind_speed) + " " + localState.city.windSpeed, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
-            Text(text = stringResource(R.string.wind_deg) + " " + localState.city.windDeg, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
-            Text(text = stringResource(R.string.pressure) + " " + localState.city.pressure, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.update_time) + " ${localState.city.humanTime}", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.feels_like) + " ${localState.city.feelsLike}", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.humidity) + " ${localState.city.humidity}", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.clouds) + " ${localState.city.clouds}", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.visibility) + " ${localState.city.visibility}", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.wind_speed) + " ${localState.city.windSpeed}", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.wind_deg) + " ${localState.city.windDeg}", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.pressure) + " ${localState.city.pressure}", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            LazyRow(
+                Modifier
+                    .padding(10.dp)
+                    .fillMaxWidth()) {
+                items(localState.city.dailyWeather) {
+                    item -> ForeCastCell(date = item.date, min = item.tempMin, max = item.tempMax)
+                }
+            }
             Button(onClick = { onDelete() }, colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary, contentColor = MaterialTheme.colors.onSecondary), modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp)) {
                 Text(text = stringResource(R.string.delete), color = MaterialTheme.colors.onSecondary)
-
             }
         }
     }

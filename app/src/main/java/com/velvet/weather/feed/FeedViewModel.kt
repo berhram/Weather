@@ -107,7 +107,7 @@ class FeedViewModel(
     }
 
     private fun addDefaultCities() = intent {
-        Log.d("FEED", "addDefaultCities invoked $coroutineContext")
+        Log.d("COR", "addDefaultCities invoked $coroutineContext")
         repository.addCity(
             name =  DEFAULT_CITY_1_NAME,
             longitude = DEFAULT_CITY_1_LONGITUDE,

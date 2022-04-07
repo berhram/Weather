@@ -1,16 +1,16 @@
 package com.velvet.data.utils
 
-import com.velvet.data.Settings.DATE_FORMAT_LONG
-import com.velvet.data.Settings.DATE_FORMAT_SHORT
+import android.util.Log
+import com.velvet.data.Settings.DATE_FORMAT
 import com.velvet.data.Settings.NO_NEW_CALL_TIME_MILLIS
 import com.velvet.data.Settings.OUTDATED_TIME_MILLIS
 import com.velvet.data.entity.City
 import com.velvet.data.entity.DailyWeather
-import com.velvet.data.schemas.geo.CitySchema
 import com.velvet.data.schemas.weather.DailySchema
 import com.velvet.data.schemas.weather.ForecastSchema
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.Instant.ofEpochSecond
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.collections.ArrayList
 
 fun Long.isRecently() : Boolean {
@@ -29,8 +29,8 @@ fun City.addForecast(forecast: ForecastSchema) : City {
         }
     }
     return this.copy(
-        time = System.currentTimeMillis(),
-        humanTime = System.currentTimeMillis().toLongHumanDate(),
+        time = forecast.currentWeather.time,
+        humanTime = forecast.currentWeather.time.toHumanDate(),
         temp = forecast.currentWeather.temp.toString(),
         feelsLike = forecast.currentWeather.feelsLike.toString(),
         pressure = forecast.currentWeather.pressure.toString(),
@@ -43,12 +43,10 @@ fun City.addForecast(forecast: ForecastSchema) : City {
     )
 }
 
-fun Long.toShortHumanDate() : String {
-    return SimpleDateFormat(DATE_FORMAT_SHORT).format(Date(this))
-}
-
-fun Long.toLongHumanDate() : String {
-    return SimpleDateFormat(DATE_FORMAT_LONG).format(Date(this))
+fun Long.toHumanDate() : String {
+    val formatter = DateTimeFormatter.ISO_INSTANT.format(ofEpochSecond(this))
+    val localDate = LocalDate.parse(formatter, DateTimeFormatter.ofPattern(DATE_FORMAT))
+    return "${localDate.dayOfMonth} ${localDate.month.toString().lowercase()}"
 }
 
 fun List<DailySchema>.toDailyWeather() : List<DailyWeather> {
@@ -61,7 +59,7 @@ fun List<DailySchema>.toDailyWeather() : List<DailyWeather> {
 
 fun DailySchema.toDailyWeather() : DailyWeather {
     return DailyWeather(
-        date = this.time.toShortHumanDate(),
+        date = this.time.toHumanDate(),
         tempMin = this.temp.min.toString(),
         tempMax = this.temp.min.toString()
     )
