@@ -1,6 +1,5 @@
 package com.velvet.weather.feed
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.velvet.data.Settings.DEFAULT_CITY_1_LATITUDE
@@ -22,7 +21,6 @@ import org.orbitmvi.orbit.syntax.simple.intent
 import org.orbitmvi.orbit.syntax.simple.postSideEffect
 import org.orbitmvi.orbit.syntax.simple.reduce
 import org.orbitmvi.orbit.viewmodel.container
-import kotlin.coroutines.coroutineContext
 
 class FeedViewModel(
     private val repository: Repository
@@ -51,32 +49,38 @@ class FeedViewModel(
     }
 
     fun refresh() = intent {
-        when (val response = repository.getWeather()) {
-            is RepositoryResponse.Success -> {
-                if (response.value.isNullOrEmpty()) {
-                    addDefaultCities()
+        viewModelScope.launch(Dispatchers.IO) {
+            when (val response = repository.getWeather()) {
+                is RepositoryResponse.Success -> {
+                    if (response.value.isNullOrEmpty()) {
+                        addDefaultCities()
+                    }
+                    reduce {
+                        state.copy(
+                            searchText = "",
+                            isSearchExpanded = false,
+                            cityCards = response.value.toCityCards(),
+                            isOutdated = false
+                        )
+                    }
                 }
-                reduce {
-                    state.copy(
-                        searchText = "",
-                        isSearchExpanded = false,
-                        cityCards = response.value.toCityCards()
-                    )
+                is RepositoryResponse.Recently -> {
+                    postSideEffect(FeedEffect.Recently)
+                    if (response.value.isNullOrEmpty()) {
+                        addDefaultCities()
+                    }
+                    reduce {
+                        state.copy(
+                            searchText = "",
+                            isSearchExpanded = false,
+                            cityCards = response.value.toCityCards(),
+                            isOutdated = false
+                        )
+                    }
                 }
-            } is RepositoryResponse.Recently -> {
-                postSideEffect(FeedEffect.Recently)
-                if (response.value.isNullOrEmpty()) {
-                    addDefaultCities()
+                is RepositoryResponse.ErrorFailure -> {
+                    postSideEffect(FeedEffect.Error)
                 }
-                reduce {
-                    state.copy(
-                        searchText = "",
-                        isSearchExpanded = false,
-                        cityCards = response.value.toCityCards()
-                    )
-                }
-            } is RepositoryResponse.ErrorFailure -> {
-                postSideEffect(FeedEffect.Error)
             }
         }
     }
@@ -107,16 +111,17 @@ class FeedViewModel(
     }
 
     private fun addDefaultCities() = intent {
-        Log.d("COR", "addDefaultCities invoked $coroutineContext")
-        repository.addCity(
-            name =  DEFAULT_CITY_1_NAME,
-            longitude = DEFAULT_CITY_1_LONGITUDE,
-            latitude = DEFAULT_CITY_1_LATITUDE
-        )
-        repository.addCity(
-            name =  DEFAULT_CITY_2_NAME,
-            longitude = DEFAULT_CITY_2_LONGITUDE,
-            latitude = DEFAULT_CITY_2_LATITUDE
-        )
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.addCity(
+                name =  DEFAULT_CITY_1_NAME,
+                longitude = DEFAULT_CITY_1_LONGITUDE,
+                latitude = DEFAULT_CITY_1_LATITUDE
+            )
+            repository.addCity(
+                name =  DEFAULT_CITY_2_NAME,
+                longitude = DEFAULT_CITY_2_LONGITUDE,
+                latitude = DEFAULT_CITY_2_LATITUDE
+            )
+        }
     }
 }

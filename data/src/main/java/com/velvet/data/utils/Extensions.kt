@@ -1,6 +1,5 @@
 package com.velvet.data.utils
 
-import android.util.Log
 import com.velvet.data.Settings.DATE_FORMAT
 import com.velvet.data.Settings.NO_NEW_CALL_TIME_MILLIS
 import com.velvet.data.Settings.OUTDATED_TIME_MILLIS

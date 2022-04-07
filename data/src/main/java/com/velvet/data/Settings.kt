@@ -2,10 +2,9 @@ package com.velvet.data
 
 object Settings {
     //TEST 10 * 1000 PROD 5 * 60 * 1000
-    const val NO_NEW_CALL_TIME_MILLIS = 10 * 1000
+    const val NO_NEW_CALL_TIME_MILLIS = 5 * 60 * 1000
     //TEST 30 * 1000 PROD 24 * 60 * 60 * 1000
-    const val OUTDATED_TIME_MILLIS = 30 * 1000
-    const val DATE_FORMAT_SHORT = "dd.MM"
+    const val OUTDATED_TIME_MILLIS = 24 * 60 * 60 * 1000
     const val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'"
     const val SHARED_PREFS = "Weather app shared prefs"
     const val LAST_UPDATED_KEY = "Last time updated key"

@@ -141,7 +141,7 @@ fun ExpandableContent(
         enter = enterExpand + enterFadeIn,
         exit = exitCollapse + exitFadeOut
     ) {
-        Column() {
+        Column {
             Text(text = stringResource(R.string.update_time) + " ${localState.city.humanTime}", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
             Text(text = stringResource(R.string.feels_like) + " ${localState.city.feelsLike}", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
             Text(text = stringResource(R.string.humidity) + " ${localState.city.humidity}", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))

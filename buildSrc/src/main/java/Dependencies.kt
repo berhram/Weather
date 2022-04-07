@@ -35,13 +35,11 @@ object Dependencies {
         const val versionCharts = "0.3.4"
 
         const val runtime = "androidx.compose.runtime:runtime:$versionCompose"
-        const val systemUiController = "com.google.accompanist:accompanist-systemuicontroller:$versionAccompanist"
         const val compiler = "androidx.compose.compiler:compiler:$versionCompose"
         const val ui = "androidx.compose.ui:ui:$versionCompose"
         const val foundation = "androidx.compose.foundation:foundation:$versionCompose"
         const val foundation_layout = "androidx.compose.foundation:foundation-layout:$versionCompose"
         const val material = "androidx.compose.material:material:$versionCompose"
-        const val runtimeLivedata = "androidx.compose.runtime:runtime-livedata:$versionCompose"
         const val uiTooling = "androidx.compose.ui:ui-tooling:$versionCompose"
         const val accompanist = "com.google.accompanist:accompanist-swiperefresh:$versionAccompanist"
         const val charts = "ma.hu:compose-charts:$versionCharts"
@@ -98,6 +96,5 @@ object Dependencies {
         const val library = "com.android.library"
         const val kotlinAndroid = "org.jetbrains.kotlin.android"
         const val kapt = "kapt"
-        const val hilt = "dagger.hilt.android.plugin"
     }
 }

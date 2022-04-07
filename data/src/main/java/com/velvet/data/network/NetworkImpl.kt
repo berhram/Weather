@@ -1,6 +1,5 @@
 package com.velvet.data.network
 
-import android.util.Log
 import com.velvet.data.BuildConfig
 import com.velvet.data.Settings.GEO_BASE_URL
 import com.velvet.data.Settings.WEATHER_BASE_URL
@@ -10,7 +9,6 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import kotlin.coroutines.coroutineContext
 
 class NetworkImpl : Network {
     private var geoService: GeoApi
@@ -41,8 +39,6 @@ class NetworkImpl : Network {
     }
 
     override suspend fun findCities(appId: String, keyword: String) : List<CitySchema> {
-        Log.d("COR", "find cities invoked $coroutineContext")
-
         return geoService.findCities(appId = appId, keyword = keyword)
     }
 
@@ -53,8 +49,6 @@ class NetworkImpl : Network {
         exclude: String,
         units: String
     ) : ForecastSchema {
-        Log.d("COR", "get weather forecast $coroutineContext")
-
         return weatherService.getWeatherForecast(
             appId = appId,
             latitude = latitude,

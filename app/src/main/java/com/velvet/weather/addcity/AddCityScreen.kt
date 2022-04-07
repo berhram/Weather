@@ -46,7 +46,7 @@ fun AddCityScreen(viewModel: AddCityViewModel, goBack: () -> Unit) {
     }) {
         Column(Modifier.fillMaxSize()) {
             SearchBar(searchText = state.value.searchText, onChangedSearchText = { viewModel.findCities(it) }, modifier = Modifier.padding(10.dp))
-            LazyColumn() {
+            LazyColumn {
                 items(state.value.candidates) {
                     item ->  CandidateCard(viewModel = viewModel, candidate = item)
                 }

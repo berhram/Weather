@@ -1,14 +1,10 @@
 <resources>
     <string name="app_name">Weather</string>
     <string name="find_city">Find city</string>
-    <string name="unknown">Unknown</string>
     <string name="search">Search</string>
     <string name="error">Can\'t complete operation. Check your Internet!</string>
-    <string name="already">Data already up to date</string>
     <string name="error_update">Can\'t retreive data from Internet!</string>
     <string name="add_city">Add city</string>
-    <string name="moscow">Moscow</string>
-    <string name="spb">Saint-Petersburg</string>
     <string name="feels_like">Feels like, °C:</string>
     <string name="update_time">Last updated:</string>
     <string name="humidity">Humidity, %:</string>
