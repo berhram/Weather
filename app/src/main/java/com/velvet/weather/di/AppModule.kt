@@ -4,10 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalSavedStateRegistryOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import com.velvet.weather.ToastMaker
 import com.velvet.weather.addcity.AddCityViewModel
 import com.velvet.weather.feed.FeedViewModel
-import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.ViewModelOwner
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.androidx.viewmodel.koin.getViewModel
@@ -35,14 +33,10 @@ inline fun <reified T : ViewModel> getComposeViewModel(
 
 val appModule = module {
     viewModel {
-        FeedViewModel(repository = get(), toastMaker = get())
+        FeedViewModel(repository = get())
     }
 
     viewModel {
-        AddCityViewModel(repository = get(), toastMaker = get())
-    }
-
-    factory {
-        ToastMaker(androidContext())
+        AddCityViewModel(repository = get())
     }
 }

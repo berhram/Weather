@@ -1,5 +1,6 @@
 package com.velvet.weather.feed
 
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -14,18 +15,27 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.velvet.data.Settings.ANIMATION_DURATION
 import com.velvet.weather.R
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun FeedScreen(viewModel: FeedViewModel, onAddCity: () -> Unit) {
+    val context = LocalContext.current
     val state = viewModel.container.stateFlow.collectAsState()
+    LaunchedEffect(viewModel) {
+        viewModel.container.sideEffectFlow.collectLatest {
+            when (it) {
+                is FeedEffect.Recently -> Toast.makeText(context, context.getString(R.string.recently_update), Toast.LENGTH_LONG).show()
+                is FeedEffect.Error -> Toast.makeText(context, context.getString(R.string.error_update), Toast.LENGTH_LONG).show()
+            }
+        }
+    }
     Scaffold(topBar = {
         TopAppBar(elevation = 0.dp) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
@@ -45,14 +55,14 @@ fun FeedScreen(viewModel: FeedViewModel, onAddCity: () -> Unit) {
                 onRefresh = { viewModel.refresh() },
                 modifier = Modifier.fillMaxSize()
             ) {
-                Column() {
-                    LazyColumn(Modifier.fillMaxWidth()) {
-                        items(state.value.cityCards) { item: CityCard ->  ExpandableCard(item, viewModel = viewModel) }
-                    }
-                    Button(onClick = { onAddCity() }, modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)) {
-                        Text(text = stringResource(id = R.string.add_city))
+                LazyColumn(Modifier.fillMaxSize()) {
+                    items(state.value.cityCards) { item: CityCard ->  ExpandableCard(item, viewModel = viewModel) }
+                    item {
+                        Button(onClick = { onAddCity() }, modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)) {
+                            Text(text = stringResource(id = R.string.add_city))
+                        }
                     }
                 }
             }
@@ -71,7 +81,7 @@ fun ExpandableCard(
             .fillMaxWidth()
             .background(MaterialTheme.colors.primary, shape = MaterialTheme.shapes.small)) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(text = localState.city.name + " " + localState.city.temp + "C", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(start = 10.dp))
+            Text(text = localState.city.name + " " + localState.city.temp + " °C", color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(start = 10.dp))
             IconButton(
                 onClick = { viewModel.onCityClick(localState.city.id) },
                 content = {
@@ -84,14 +94,13 @@ fun ExpandableCard(
                 }
             )
         }
-        ExpandableContent(visible = localState.isExpanded, initialVisibility = localState.isExpanded)
+        ExpandableContent(localState, onDelete = { viewModel.deleteCity(localState.city.id) })
     }
 }
 
 @Composable
 fun ExpandableContent(
-    visible: Boolean = true,
-    initialVisibility: Boolean = false
+    localState : CityCard, onDelete: () -> Unit
 ) {
     val enterFadeIn = remember {
         fadeIn(
@@ -117,17 +126,27 @@ fun ExpandableContent(
     }
     AnimatedVisibility(
         visibleState = remember {
-            MutableTransitionState(initialState = initialVisibility)
-        }.apply { targetState = visible },
+            MutableTransitionState(initialState = localState.isExpanded)
+        }.apply { targetState = localState.isExpanded },
         modifier = Modifier,
         enter = enterExpand + enterFadeIn,
         exit = exitCollapse + exitFadeOut
     ) {
         Column() {
-            Text(
-                text = "Expandable content here",
-                textAlign = TextAlign.Center
-            )
+            Text(text = stringResource(R.string.update_time) + " " + localState.city.humanTime, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.feels_like) + " " + localState.city.feelsLike, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.humidity) + " " + localState.city.humidity, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.clouds) + " " + localState.city.clouds, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.visibility) + " " + localState.city.visibility, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.wind_speed) + " " + localState.city.windSpeed, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.wind_deg) + " " + localState.city.windDeg, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Text(text = stringResource(R.string.pressure) + " " + localState.city.pressure, color = MaterialTheme.colors.onPrimary, modifier = Modifier.padding(10.dp))
+            Button(onClick = { onDelete() }, colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary, contentColor = MaterialTheme.colors.onSecondary), modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)) {
+                Text(text = stringResource(R.string.delete), color = MaterialTheme.colors.onSecondary)
+
+            }
         }
     }
 }

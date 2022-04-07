@@ -3,10 +3,20 @@
     <string name="find_city">Find city</string>
     <string name="unknown">Unknown</string>
     <string name="search">Search</string>
-    <string name="error_find">Can\'t retreive data. Check your Internet!</string>
+    <string name="error">Can\'t complete operation. Check your Internet!</string>
     <string name="already">Data already up to date</string>
     <string name="error_update">Can\'t retreive data from Internet!</string>
     <string name="add_city">Add city</string>
     <string name="moscow">Moscow</string>
     <string name="spb">Saint-Petersburg</string>
+    <string name="feels_like">Feels like, °C:</string>
+    <string name="update_time">Last updated:</string>
+    <string name="humidity">Humidity, %:</string>
+    <string name="clouds">Cloudiness, %:</string>
+    <string name="visibility">Visibility, m:</string>
+    <string name="wind_deg">Wind direction, degrees:</string>
+    <string name="wind_speed">Wind speed, m/s:</string>
+    <string name="pressure">Pressure, hPa:</string>
+    <string name="delete">Delete</string>
+    <string name="recently_update">You already up to date! = )</string>
 </resources>

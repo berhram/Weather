@@ -29,8 +29,8 @@ fun City.addForecast(forecast: ForecastSchema) : City {
         }
     }
     return this.copy(
-        time = forecast.currentWeather.time,
-        humanTime = forecast.currentWeather.time.toLongHumanDate(),
+        time = System.currentTimeMillis(),
+        humanTime = System.currentTimeMillis().toLongHumanDate(),
         temp = forecast.currentWeather.temp.toString(),
         feelsLike = forecast.currentWeather.feelsLike.toString(),
         pressure = forecast.currentWeather.pressure.toString(),
@@ -40,13 +40,6 @@ fun City.addForecast(forecast: ForecastSchema) : City {
         windSpeed = forecast.currentWeather.windSpeed.toString(),
         windDeg = forecast.currentWeather.windDeg.toString(),
         dailyWeather = dailyForecast
-    )
-}
-
-fun City.addCoordinates(citySchema: CitySchema) : City {
-    return this.copy(
-        latitude = citySchema.latitude,
-        longitude = citySchema.longitude
     )
 }
 

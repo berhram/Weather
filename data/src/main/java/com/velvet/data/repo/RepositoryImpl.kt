@@ -1,5 +1,6 @@
 package com.velvet.data.repo
 
+import com.velvet.data.Settings
 import com.velvet.data.Settings.API_KEY
 import com.velvet.data.Settings.EXCLUDED
 import com.velvet.data.Settings.UNITS
@@ -44,11 +45,11 @@ class RepositoryImpl(
             if (forecast != null) {
                 dao.insert(
                     City(
-                        id = System.currentTimeMillis(),
+                        id = name + latitude + longitude,
                         name = name,
                         latitude = latitude,
                         longitude = longitude,
-                        time = forecast.currentWeather.time,
+                        time = System.currentTimeMillis(),
                         humanTime = forecast.currentWeather.time.toLongHumanDate(),
                         temp = forecast.currentWeather.temp.toString(),
                         feelsLike = forecast.currentWeather.feelsLike.toString(),
@@ -68,6 +69,10 @@ class RepositoryImpl(
         } else {
             return false
         }
+    }
+
+    override suspend fun delete(id: String) {
+        dao.delete(dao.getById(id)[0])
     }
 
     private suspend fun updateWeather() : Boolean {

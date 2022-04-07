@@ -3,8 +3,6 @@ package com.velvet.weather.addcity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.velvet.data.repo.Repository
-import com.velvet.weather.R
-import com.velvet.weather.ToastMaker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -16,7 +14,7 @@ import org.orbitmvi.orbit.syntax.simple.postSideEffect
 import org.orbitmvi.orbit.syntax.simple.reduce
 import org.orbitmvi.orbit.viewmodel.container
 
-class AddCityViewModel(private val repository: Repository, private val toastMaker: ToastMaker) : ContainerHost<AddCityState,AddCityEffect>,
+class AddCityViewModel(private val repository: Repository) : ContainerHost<AddCityState,AddCityEffect>,
     ViewModel()  {
     override val container: Container<AddCityState,AddCityEffect> = container(AddCityState())
     private var searchJob: Job? = null
@@ -33,9 +31,7 @@ class AddCityViewModel(private val repository: Repository, private val toastMake
                     reduce { state.copy(candidates = candidates) }
                 }
             } else {
-                viewModelScope.launch(Dispatchers.Main) {
-                    toastMaker.makeToast(R.string.error_find)
-                }
+                postSideEffect(AddCityEffect.Error)
             }
         }
     }
@@ -44,9 +40,7 @@ class AddCityViewModel(private val repository: Repository, private val toastMake
         if (repository.addCity(name = name, latitude = latitude, longitude = longitude)) {
             postSideEffect(AddCityEffect.GoBack)
         } else {
-            viewModelScope.launch(Dispatchers.Main) {
-                toastMaker.makeToast(R.string.error_find)
-            }
+            postSideEffect(AddCityEffect.Error)
         }
     }
 

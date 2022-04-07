@@ -8,12 +8,18 @@ interface CityDao {
     @Query("SELECT * FROM city")
     fun getAll(): List<City>
 
-    @Insert
+    @Query("SELECT * FROM city WHERE id LIKE :targetId LIMIT 1")
+    fun getById(targetId: String): List<City>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(cities: List<City>)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(cities: City)
 
     @Delete
     fun deleteAll(cities: List<City>)
+
+    @Delete
+    fun delete(city: City)
 }

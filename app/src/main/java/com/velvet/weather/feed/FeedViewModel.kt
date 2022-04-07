@@ -1,8 +1,8 @@
 package com.velvet.weather.feed
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.velvet.data.Settings
 import com.velvet.data.Settings.DEFAULT_CITY_1_LATITUDE
 import com.velvet.data.Settings.DEFAULT_CITY_1_LONGITUDE
 import com.velvet.data.Settings.DEFAULT_CITY_1_NAME
@@ -12,8 +12,6 @@ import com.velvet.data.Settings.DEFAULT_CITY_2_NAME
 import com.velvet.data.repo.Repository
 import com.velvet.data.repo.RepositoryResponse
 import com.velvet.data.utils.isOutdated
-import com.velvet.weather.R
-import com.velvet.weather.ToastMaker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -21,12 +19,13 @@ import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.Container
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.syntax.simple.intent
+import org.orbitmvi.orbit.syntax.simple.postSideEffect
 import org.orbitmvi.orbit.syntax.simple.reduce
 import org.orbitmvi.orbit.viewmodel.container
+import kotlin.coroutines.coroutineContext
 
 class FeedViewModel(
-    private val repository: Repository,
-    private val toastMaker: ToastMaker
+    private val repository: Repository
     ) : ContainerHost<FeedState, FeedEffect>,
     ViewModel() {
     override val container: Container<FeedState, FeedEffect> = container(FeedState())
@@ -65,7 +64,7 @@ class FeedViewModel(
                     )
                 }
             } is RepositoryResponse.Recently -> {
-                viewModelScope.launch(Dispatchers.Main) { toastMaker.makeToast(R.string.already) }
+                postSideEffect(FeedEffect.Recently)
                 if (response.value.isNullOrEmpty()) {
                     addDefaultCities()
                 }
@@ -77,12 +76,12 @@ class FeedViewModel(
                     )
                 }
             } is RepositoryResponse.ErrorFailure -> {
-                viewModelScope.launch(Dispatchers.Main) { toastMaker.makeToast(R.string.error_update) }
+                postSideEffect(FeedEffect.Error)
             }
         }
     }
 
-    fun onCityClick(id: Long) = intent {
+    fun onCityClick(id: String) = intent {
         val cityCards = state.cityCards.toMutableList()
         for (card in cityCards) {
             if (card.city.id == id) {
@@ -102,7 +101,13 @@ class FeedViewModel(
         }
     }
 
+    fun deleteCity(id: String) = intent {
+        repository.delete(id)
+        refresh()
+    }
+
     private fun addDefaultCities() = intent {
+        Log.d("FEED", "addDefaultCities invoked $coroutineContext")
         repository.addCity(
             name =  DEFAULT_CITY_1_NAME,
             longitude = DEFAULT_CITY_1_LONGITUDE,

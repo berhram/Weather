@@ -8,4 +8,5 @@ interface Repository {
     suspend fun getFilteredWeather(keyword: String) : List<City>
     suspend fun findCandidates(keyword: String) : Result<List<CitySchema>>
     suspend fun addCity(name: String, latitude: Double, longitude: Double) : Boolean
+    suspend fun delete(id: String)
 }

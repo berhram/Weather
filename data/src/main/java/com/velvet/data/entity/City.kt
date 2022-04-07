@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class City(
-    @PrimaryKey val id: Long,
+    @PrimaryKey val id: String,
     val name: String,
     val latitude: Double,
     val longitude: Double,
