@@ -1,17 +1,10 @@
 <resources>
-    <string name="app_name">Tarot</string>
-    <string name="tarot_dir">~/tarot</string>
-    <string name="card_dir">.card</string>
-    <string name="no_cards">Oops, there is no cards for some reason!</string>
-    <string name="type">Type:</string>
-    <string name="name">Name:</string>
-    <string name="meaning_up">Meaning (up side):</string>
-    <string name="meaning_rev">Meaning (reversed side):</string>
-    <string name="desc">Description:</string>
-    <string name="button_back">Back button</string>
-    <string name="button_filter">Filter button</string>
+    <string name="app_name">Weather</string>
+    <string name="find_city">Find city</string>
     <string name="unknown">Unknown</string>
     <string name="search">Search</string>
-    <string name="major">Major</string>
-    <string name="minor">Minor</string>
+    <string name="error_find">Can\'t retreive data. Check your Internet!</string>
+    <string name="already">Data already up to date</string>
+    <string name="error_update">Can\'t retreive data from Internet!</string>
+    <string name="add_city">Add city</string>
 </resources>
