@@ -12,7 +12,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val dataModule = module {
-    factory<Repository> {
+    single<Repository> {
         RepositoryImpl(
             network = get(),
             dao = get(),
@@ -20,15 +20,15 @@ val dataModule = module {
         )
     }
 
-    factory {
+    single {
         TimeStore(androidContext())
     }
 
-    factory<Network> {
+    single<Network> {
         NetworkImpl()
     }
 
-    factory {
+    single {
         Room.databaseBuilder(androidContext(), CityDatabase::class.java, DB_NAME).build().cityDao()
     }
 }

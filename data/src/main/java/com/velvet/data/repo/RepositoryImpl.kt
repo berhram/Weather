@@ -21,21 +21,26 @@ class RepositoryImpl(
     private val timeStore: TimeStore
     ) : Repository, SafeApiCall {
 
-    private val errorChannel: Channel<RepositoryErrors> = Channel(1)
+    private val addCityChannel: Channel<AddCityResponse> = Channel(1)
+    private val feedChannel: Channel<FeedResponse> = Channel(1)
 
     override suspend fun getData() : Flow<List<City>> {
         return dao.getAllDistinctUntilChanged()
     }
 
-    override suspend fun getErrorChannel() : Channel<RepositoryErrors> {
-        return errorChannel
+    override fun getFeedChannel() : Channel<FeedResponse> {
+        return feedChannel
+    }
+
+    override fun getAddCityChannel() : Channel<AddCityResponse> {
+        return addCityChannel
     }
 
     override suspend fun fetchWeather() {
         if (timeStore.getTime().isRecently()) {
             updateWeather()
         } else {
-            errorChannel.send(RepositoryErrors.RECENTLY)
+            feedChannel.send(FeedResponse.RECENTLY)
         }
     }
 
@@ -66,8 +71,10 @@ class RepositoryImpl(
                         dailyWeather = forecast.dailyWeather.toDailyWeather()
                     )
                 )
+                addCityChannel.send(AddCityResponse.SUCCESS)
             } else {
-                errorChannel.send(RepositoryErrors.FAILURE_ADD)
+                addCityChannel.send(AddCityResponse.FAILURE)
+                feedChannel.send(FeedResponse.FAILURE_ADD)
         }
     }
 
@@ -87,7 +94,7 @@ class RepositoryImpl(
                         updatedCities.add(city.addForecast(forecast))
                     }
                 } else {
-                    errorChannel.send(RepositoryErrors.FAILURE_DOWNLOAD)
+                    feedChannel.send(FeedResponse.FAILURE)
                 }
             }
             dao.deleteAll(it)

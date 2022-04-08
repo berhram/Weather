@@ -2,10 +2,13 @@ package com.velvet.weather.addcity
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.velvet.data.repo.AddCityResponse
 import com.velvet.data.repo.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.Container
 import org.orbitmvi.orbit.ContainerHost
@@ -19,19 +22,30 @@ class AddCityViewModel(private val repository: Repository) : ContainerHost<AddCi
     override val container: Container<AddCityState,AddCityEffect> = container(AddCityState())
     private var searchJob: Job? = null
 
+    init {
+        observeRepository()
+    }
+
+    private fun observeRepository() = intent {
+        repository.getAddCityChannel().receiveAsFlow().collectLatest { error ->
+            when (error) {
+                AddCityResponse.FAILURE -> { postSideEffect(AddCityEffect.Error) }
+                AddCityResponse.SUCCESS -> { postSideEffect(AddCityEffect.GoBack) }
+            }
+        }
+    }
+
     fun findCities(keyword: String) = intent {
         searchJob?.cancel()
         searchJob = viewModelScope.launch(Dispatchers.IO) {
-            delay(INPUT_DELAY)
             reduce { state.copy(searchText = keyword) }
+            delay(INPUT_DELAY)
             val response = repository.findCandidates(state.searchText)
             if (response.isSuccess) {
                 val candidates = response.getOrNull()
                 if (candidates != null) {
                     reduce { state.copy(candidates = candidates) }
                 }
-            } else {
-                postSideEffect(AddCityEffect.Error)
             }
         }
     }

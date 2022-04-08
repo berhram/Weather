@@ -34,6 +34,7 @@ fun FeedScreen(viewModel: FeedViewModel, onAddCity: () -> Unit) {
             when (it) {
                 is FeedEffect.Recently -> Toast.makeText(context, context.getString(R.string.recently_update), Toast.LENGTH_LONG).show()
                 is FeedEffect.Error -> Toast.makeText(context, context.getString(R.string.error_update), Toast.LENGTH_LONG).show()
+                is FeedEffect.ErrorAdd -> Toast.makeText(context, context.getString(R.string.error_add), Toast.LENGTH_LONG).show()
             }
         }
     }

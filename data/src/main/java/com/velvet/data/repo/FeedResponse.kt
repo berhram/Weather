@@ -1,7 +1,7 @@
 package com.velvet.data.repo
 
-enum class RepositoryErrors {
-    FAILURE_DOWNLOAD,
+enum class FeedResponse {
+    FAILURE,
     FAILURE_ADD,
     RECENTLY
 }

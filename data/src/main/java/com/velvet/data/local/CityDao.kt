@@ -1,6 +1,5 @@
 package com.velvet.data.local
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.velvet.data.entity.City
 import kotlinx.coroutines.flow.Flow

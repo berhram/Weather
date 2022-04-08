@@ -9,11 +9,12 @@ import com.velvet.data.Settings.DEFAULT_CITY_2_LATITUDE
 import com.velvet.data.Settings.DEFAULT_CITY_2_LONGITUDE
 import com.velvet.data.Settings.DEFAULT_CITY_2_NAME
 import com.velvet.data.repo.Repository
-import com.velvet.data.repo.RepositoryErrors
+import com.velvet.data.repo.FeedResponse
 import com.velvet.data.utils.isOutdated
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.Container
@@ -31,12 +32,13 @@ class FeedViewModel(
     private var searchJob: Job? = null
 
     init {
-        observeRepository()
+        observeData()
+        observeResponses()
         refresh()
         checkOutdated()
     }
 
-    private fun observeRepository() = intent(registerIdling = false) {
+    private fun observeData() = intent(registerIdling = false) {
         repository.getData().collect { cities ->
             if (cities.isEmpty()) {
                 addDefaultCities()
@@ -52,11 +54,14 @@ class FeedViewModel(
                 )
             }
         }
-        repository.getErrorChannel().receiveAsFlow().collect { error ->
-            if (error == RepositoryErrors.FAILURE_DOWNLOAD) {
-                postSideEffect(FeedEffect.Error)
-            } else if (error == RepositoryErrors.RECENTLY) {
-                postSideEffect(FeedEffect.Recently)
+    }
+
+    private fun observeResponses() = intent(registerIdling = false) {
+        repository.getFeedChannel().receiveAsFlow().collectLatest { error ->
+            when (error) {
+                FeedResponse.FAILURE -> { postSideEffect(FeedEffect.Error) }
+                FeedResponse.RECENTLY -> { postSideEffect(FeedEffect.Recently) }
+                FeedResponse.FAILURE_ADD -> { postSideEffect(FeedEffect.ErrorAdd) }
             }
         }
     }

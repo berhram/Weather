@@ -7,9 +7,10 @@ import kotlinx.coroutines.flow.Flow
 
 interface Repository {
     suspend fun getData() : Flow<List<City>>
-    suspend fun getErrorChannel() : Channel<RepositoryErrors>
     suspend fun fetchWeather()
     suspend fun findCandidates(keyword: String) : Result<List<CitySchema>>
     suspend fun addCity(name: String, latitude: Double, longitude: Double)
     suspend fun delete(id: String)
+    fun getFeedChannel() : Channel<FeedResponse>
+    fun getAddCityChannel() : Channel<AddCityResponse>
 }
