@@ -49,7 +49,6 @@ android {
 
 dependencies {
     implementation(project(":data"))
-    kapt(Dependencies.Room.roomKapt)
     implementation(Dependencies.Room.room)
     implementation(Dependencies.Orbit.orbit)
     implementation(Dependencies.Orbit.orbitCore)
@@ -58,7 +57,6 @@ dependencies {
     implementation(Dependencies.Compose.compiler)
     implementation(Dependencies.Compose.ui)
     implementation(Dependencies.Compose.foundation)
-    implementation(Dependencies.Compose.charts)
     implementation(Dependencies.Compose.foundation_layout)
     implementation(Dependencies.Compose.material)
     implementation(Dependencies.Compose.uiTooling)
@@ -75,7 +73,6 @@ dependencies {
     implementation(Dependencies.Di.koin)
     implementation(Dependencies.Di.koinNavGraph)
     implementation(Dependencies.Di.koinCompose)
-    testImplementation(Dependencies.Room.roomTest)
 }
 
 kapt {

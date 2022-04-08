@@ -11,6 +11,9 @@ import com.velvet.data.utils.addForecast
 import com.velvet.data.utils.isRecently
 import com.velvet.data.utils.toDailyWeather
 import com.velvet.data.utils.toHumanDate
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 
 class RepositoryImpl(
     private val network: Network,
@@ -18,30 +21,32 @@ class RepositoryImpl(
     private val timeStore: TimeStore
     ) : Repository, SafeApiCall {
 
-    override suspend fun getWeather() : RepositoryResponse<List<City>> {
-        if (timeStore.getTime().isRecently()) {
-            return RepositoryResponse.Recently(dao.getAll())
-        }
-        return if (updateWeather()) {
-            RepositoryResponse.Success(dao.getAll())
-        } else {
-            RepositoryResponse.ErrorFailure
-        }
+    private val errorChannel: Channel<RepositoryErrors> = Channel(1)
+
+    override suspend fun getData() : Flow<List<City>> {
+        return dao.getAllDistinctUntilChanged()
     }
 
-    override suspend fun getFilteredWeather(keyword: String) : List<City> {
-        return dao.getAll().filter { it.name.contains(other = keyword, ignoreCase = true) }
+    override suspend fun getErrorChannel() : Channel<RepositoryErrors> {
+        return errorChannel
+    }
+
+    override suspend fun fetchWeather() {
+        if (timeStore.getTime().isRecently()) {
+            updateWeather()
+        } else {
+            errorChannel.send(RepositoryErrors.RECENTLY)
+        }
     }
 
     override suspend fun findCandidates(keyword: String) = safeApiCall {
         network.findCities(appId = API_KEY, keyword = keyword)
     }
 
-    override suspend fun addCity(name: String, latitude: Double, longitude: Double): Boolean {
+    override suspend fun addCity(name: String, latitude: Double, longitude: Double) {
         val result = downloadCityWeather(latitude = latitude, longitude = longitude)
-        if (result.isSuccess) {
-            val forecast = result.getOrNull()
-            if (forecast != null) {
+        if (result.isSuccess &&  result.getOrNull() != null) {
+            val forecast = result.getOrNull()!!
                 dao.insert(
                     City(
                         id = name + latitude + longitude,
@@ -61,35 +66,34 @@ class RepositoryImpl(
                         dailyWeather = forecast.dailyWeather.toDailyWeather()
                     )
                 )
-                return true
             } else {
-                return false
-            }
-        } else {
-            return false
+                errorChannel.send(RepositoryErrors.FAILURE_ADD)
         }
     }
 
     override suspend fun delete(id: String) {
-        dao.delete(dao.getById(id)[0])
+        dao.delete(dao.getById(id))
     }
 
-    private suspend fun updateWeather() : Boolean {
-        val cities = dao.getAll()
-        val updatedCities = ArrayList<City>()
-        for (city in cities) {
-            val forecastResult = downloadCityWeather(latitude = city.latitude, longitude = city.longitude)
-            if (forecastResult.isSuccess) {
-                val forecast = forecastResult.getOrNull()
-                if (forecast != null) {
-                    updatedCities.add(city.addForecast(forecast))
-                } else { return false }
-            } else { return false }
+    private suspend fun updateWeather() {
+        dao.getAll().collectLatest {
+            val updatedCities = ArrayList<City>()
+            for (city in it) {
+                val forecastResult =
+                    downloadCityWeather(latitude = city.latitude, longitude = city.longitude)
+                if (forecastResult.isSuccess) {
+                    val forecast = forecastResult.getOrNull()
+                    if (forecast != null) {
+                        updatedCities.add(city.addForecast(forecast))
+                    }
+                } else {
+                    errorChannel.send(RepositoryErrors.FAILURE_DOWNLOAD)
+                }
+            }
+            dao.deleteAll(it)
+            dao.insertAll(updatedCities)
+            timeStore.saveTime(System.currentTimeMillis())
         }
-        dao.deleteAll(cities)
-        dao.insertAll(updatedCities)
-        timeStore.saveTime(System.currentTimeMillis())
-        return true
     }
 
     private suspend fun downloadCityWeather(latitude: Double, longitude: Double) = safeApiCall {

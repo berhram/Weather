@@ -22,8 +22,8 @@ class AddCityViewModel(private val repository: Repository) : ContainerHost<AddCi
     fun findCities(keyword: String) = intent {
         searchJob?.cancel()
         searchJob = viewModelScope.launch(Dispatchers.IO) {
+            delay(INPUT_DELAY)
             reduce { state.copy(searchText = keyword) }
-            delay(2000)
             val response = repository.findCandidates(state.searchText)
             if (response.isSuccess) {
                 val candidates = response.getOrNull()
@@ -37,11 +37,12 @@ class AddCityViewModel(private val repository: Repository) : ContainerHost<AddCi
     }
 
     fun addCity(name: String, latitude: Double, longitude: Double) = intent {
-        if (repository.addCity(name = name, latitude = latitude, longitude = longitude)) {
-            postSideEffect(AddCityEffect.GoBack)
-        } else {
-            postSideEffect(AddCityEffect.Error)
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.addCity(name = name, latitude = latitude, longitude = longitude)
         }
     }
 
+    companion object {
+        const val INPUT_DELAY = 2000L
+    }
 }

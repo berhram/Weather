@@ -13,6 +13,7 @@ object Dependencies {
         const val version = "2.4.2"
 
         const val room = "androidx.room:room-runtime:$version"
+        const val roomKtx = "androidx.room:room-ktx:$version"
         const val roomKapt = "androidx.room:room-compiler:$version"
         const val roomTest = "androidx.room:room-testing:$version"
     }
@@ -63,8 +64,10 @@ object Dependencies {
         const val versionAppCompat = "1.4.1"
         const val versionMaterial = "1.5.0"
         const val versionCoroutines = "1.6.0"
+        const val versionLiveData = "2.5.0"
 
         const val coreKtx = "androidx.core:core-ktx:$versionCoreKtx"
+        const val livedata = "androidx.lifecycle:lifecycle-livedata-ktx:$versionLiveData"
         const val appCompat = "androidx.appcompat:appcompat:$versionAppCompat"
         const val material  = "com.google.android.material:material:$versionMaterial"
         const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versionCoroutines"

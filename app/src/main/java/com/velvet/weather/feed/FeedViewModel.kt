@@ -9,11 +9,12 @@ import com.velvet.data.Settings.DEFAULT_CITY_2_LATITUDE
 import com.velvet.data.Settings.DEFAULT_CITY_2_LONGITUDE
 import com.velvet.data.Settings.DEFAULT_CITY_2_NAME
 import com.velvet.data.repo.Repository
-import com.velvet.data.repo.RepositoryResponse
+import com.velvet.data.repo.RepositoryErrors
 import com.velvet.data.utils.isOutdated
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.Container
 import org.orbitmvi.orbit.ContainerHost
@@ -30,8 +31,34 @@ class FeedViewModel(
     private var searchJob: Job? = null
 
     init {
+        observeRepository()
         refresh()
         checkOutdated()
+    }
+
+    private fun observeRepository() = intent(registerIdling = false) {
+        repository.getData().collect { cities ->
+            if (cities.isEmpty()) {
+                addDefaultCities()
+            }
+            reduce {
+                state.copy(
+                    cityCards = cities.filter {
+                        city -> city.name.contains(
+                        other = state.searchText,
+                        ignoreCase = true
+                        )
+                    }.toCityCards()
+                )
+            }
+        }
+        repository.getErrorChannel().receiveAsFlow().collect { error ->
+            if (error == RepositoryErrors.FAILURE_DOWNLOAD) {
+                postSideEffect(FeedEffect.Error)
+            } else if (error == RepositoryErrors.RECENTLY) {
+                postSideEffect(FeedEffect.Recently)
+            }
+        }
     }
 
     private fun checkOutdated() = intent {
@@ -50,38 +77,7 @@ class FeedViewModel(
 
     fun refresh() = intent {
         viewModelScope.launch(Dispatchers.IO) {
-            when (val response = repository.getWeather()) {
-                is RepositoryResponse.Success -> {
-                    if (response.value.isNullOrEmpty()) {
-                        addDefaultCities()
-                    }
-                    reduce {
-                        state.copy(
-                            searchText = "",
-                            isSearchExpanded = false,
-                            cityCards = response.value.toCityCards(),
-                            isOutdated = false
-                        )
-                    }
-                }
-                is RepositoryResponse.Recently -> {
-                    postSideEffect(FeedEffect.Recently)
-                    if (response.value.isNullOrEmpty()) {
-                        addDefaultCities()
-                    }
-                    reduce {
-                        state.copy(
-                            searchText = "",
-                            isSearchExpanded = false,
-                            cityCards = response.value.toCityCards(),
-                            isOutdated = false
-                        )
-                    }
-                }
-                is RepositoryResponse.ErrorFailure -> {
-                    postSideEffect(FeedEffect.Error)
-                }
-            }
+            repository.fetchWeather()
         }
     }
 
@@ -98,16 +94,13 @@ class FeedViewModel(
     fun searchCity(searchWord: String) = intent {
         searchJob?.cancel()
         searchJob = viewModelScope.launch(Dispatchers.IO) {
-            reduce { state.copy(searchText = searchWord) }
-            val cities = repository.getFilteredWeather(state.searchText)
             delay(1000)
-            reduce { state.copy(cityCards = cities.toCityCards()) }
+            reduce { state.copy(searchText = searchWord) }
         }
     }
 
     fun deleteCity(id: String) = intent {
         repository.delete(id)
-        refresh()
     }
 
     private fun addDefaultCities() = intent {

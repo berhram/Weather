@@ -52,6 +52,7 @@ dependencies {
     androidTestImplementation(Dependencies.Testing.composeUiTest)
     debugImplementation(Dependencies.Testing.composeTestRule)
     implementation(Dependencies.Room.room)
+    implementation(Dependencies.Room.roomKtx)
     testImplementation(Dependencies.Room.roomTest)
     implementation(Dependencies.Di.koin)
     implementation(Dependencies.Di.koinNavGraph)
